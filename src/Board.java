@@ -51,57 +51,6 @@ public class Board {
 		}
 	}
 	
-	private void validateRows() {
-		for (int value = 1; value <= 9; value++) {
-			for (int row = 0; row < 9; row++) {
-				int count = 0;
-				for (Cell cell : cells.get(row)) {
-					count += cell.getValue() == value ? 1 : 0;
-				}
-				if (count > 1) {
-					System.out.println("Row " + row + ": " + value + "(" + count + ")");
-				}
-			}
-		}
-	}
-	
-	private void validateColumns() {
-		for (int value = 1; value <= 9; value++) {
-			for (int column = 0; column < 9; column++) {
-				int count = 0;
-				for (ArrayList<Cell> row : cells) {
-					count += row.get(column).getValue() == value ? 1 : 0;
-				}
-				if (count > 1) {
-					System.out.println("Column " + column + ": " + value + "(" + count + ")");
-				}
-			}
-		}
-	}
-	
-	private void validateBoxes() {
-		ArrayList<ArrayList<Cell>> boxes = new ArrayList<ArrayList<Cell>>();
-		for (int i = 0; i < 9; i++) {
-			boxes.add(new ArrayList<Cell>());
-		}
-		for (int row = 0; row < 9; row++) {
-			for (int column = 0; column < 9; column++) {
-				boxes.get(3 * (row/3) + column/3).add(cells.get(row).get(column));
-			}
-		}
-		for (int value = 1; value <= 9; value++) {
-			for (int box = 0; box < 9; box++) {
-				int count = 0;
-				for (Cell cell : boxes.get(box)) {
-					count += cell.getValue() == value ? 1 : 0;
-				}
-				if (count > 1) {
-					System.out.println("Box " + box + ": " + value + "(" + count + ")");
-				}
-			}
-		}
-	}
-	
 	private int getIndexRow(Cell cell) {
 		for (int row = 0; row < 9; row++) {
 			if (cells.get(row).contains(cell)) {
@@ -238,12 +187,6 @@ public class Board {
 			
 			nIterations++;
 		}
-	}
-	
-	public void validate() {
-		validateRows();
-		validateColumns();
-		validateBoxes();
 	}
 	
 	public String toString() {
