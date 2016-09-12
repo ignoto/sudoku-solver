@@ -23,25 +23,27 @@ public class Board {
 				cells.get(row).add(new Cell());
 			}
 		}
-		
+				
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
 			
 			String line = "";
-			int row = 0;
+			int rowNumber = 0;
 			while ((line = reader.readLine()) != null) {
-				for (int col = 0; col < line.length(); col++) {
-					Integer value = Character.getNumericValue(line.charAt(col));
-					Cell cell = cells.get(row).get(col);
-					Set<Integer> candidatesToRemove = new HashSet<Integer>();
-					Set<Integer> candidatesCurrent = cell.getCandidates();
-					candidatesCurrent.remove(value);
-					candidatesToRemove.addAll(candidatesCurrent);
-					if (cell.removeCandidates(candidatesToRemove)) {
-						resolve(row, col);
+				for (int colNumber = 0; colNumber < line.length(); colNumber++) {
+					Integer value = Character.getNumericValue(line.charAt(colNumber));
+					if (value != 0) {
+						Cell cell = cells.get(rowNumber).get(colNumber);
+						Set<Integer> candidatesToRemove = new HashSet<Integer>();
+						Set<Integer> candidatesCurrent = cell.getCandidates();
+						candidatesCurrent.remove(value);
+						candidatesToRemove.addAll(candidatesCurrent);
+						if (cell.removeCandidates(candidatesToRemove)) {
+							resolve(cell);
+						}
 					}
 				}
-				row++;
+				rowNumber++;
 			}
 			
 			reader.close();
@@ -53,38 +55,61 @@ public class Board {
 		
 	}
 	
-	private void getComplement(int rowNumber, int colNumber) {
+	private Set<Cell> getComplement(Cell cell) {
 		Set<Cell> complement = new HashSet<Cell>();
+		int thisRowNumber = getRowNumber(cell);
+		int thisColNumber = getColNumber(cell);
 		
-		ArrayList<Cell> cellsRow = cells.get(rowNumber);
+		ArrayList<Cell> cellsRow = cells.get(thisRowNumber);
 		ArrayList<Cell> cellsCol = new ArrayList<Cell>();
 		ArrayList<Cell> cellsBox = new ArrayList<Cell>();
 		
-		for (int row = 0; row < 9; row++) {
-			cellsCol.add(cells.get(row).get(colNumber));
+		for (int rowNumber = 0; rowNumber < 9; rowNumber++) {
+			cellsCol.add(cells.get(rowNumber).get(thisColNumber));
 		}
 		
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				cellsBox.add(cells.get(rowNumber + i))
+				cellsBox.add(cells.get(3*(thisRowNumber/3) + i%3).get(3*(thisColNumber/3) + j%3));
 			}
 		}
 		
-	}
-	
-	private void resolve(int row, int column) {
+		complement.addAll(cellsRow);
+		complement.addAll(cellsCol);
+		complement.addAll(cellsBox);
+		complement.remove(cell);
 		
+		return complement;
 	}
 	
-	private boolean isSolved() {
-		for (ArrayList<Cell> row : cells) {
-			for (Cell cell : row) {
-				if (!cell.isSolved()) {
-					return false;
+	private void resolve(Cell cell) {
+		Set<Cell> complement = getComplement(cell);
+						
+		for (Cell cellComp : complement) {
+			if (cellComp.removeCandidates(cell.getCandidates())) {
+				resolve(cell);
+			}
+		}
+	}
+	
+	private int getRowNumber(Cell cell) {
+		for (int rowNumber = 0; rowNumber < 9; rowNumber++) {
+			if (cells.get(rowNumber).contains(cell)) {
+				return rowNumber;
+			}
+		}
+		return -1;
+	}
+	
+	private int getColNumber(Cell cell) {
+		for (int rowNumber = 0; rowNumber < 9; rowNumber++) {
+			for (int colNumber = 0; colNumber < 9; colNumber++) {
+				if (cells.get(rowNumber).get(colNumber).equals(cell)) {
+					return colNumber;
 				}
 			}
 		}
-		return true;
+		return -1;
 	}
 	
 	public String toString() {
