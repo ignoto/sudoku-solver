@@ -11,37 +11,18 @@ public class Board {
 	private ArrayList<ArrayList<Cell>> cells;
 	
 	public Board(String fileName) {
-		
-		// Create cells
 		cells = new ArrayList<ArrayList<Cell>>();
-		for (int row = 0; row < 9; row++) {
-			cells.add(new ArrayList<Cell>());
-		}
-		
-		for (int row = 0; row < 9; row++) {
-			for (int column = 0; column < 9; column++) {
-				cells.get(row).add(new Cell());
-			}
-		}
 				
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
 			
-			String line = "";
+			String line;
 			int rowNumber = 0;
 			while ((line = reader.readLine()) != null) {
+				cells.add(new ArrayList<Cell>());
 				for (int colNumber = 0; colNumber < line.length(); colNumber++) {
-					Integer value = Character.getNumericValue(line.charAt(colNumber));
-					if (value != 0) {
-						Cell cell = cells.get(rowNumber).get(colNumber);
-						Set<Integer> candidatesToRemove = new HashSet<Integer>();
-						Set<Integer> candidatesCurrent = cell.getCandidates();
-						candidatesCurrent.remove(value);
-						candidatesToRemove.addAll(candidatesCurrent);
-						if (cell.removeCandidates(candidatesToRemove)) {
-							resolve(cell);
-						}
-					}
+					int value = Character.getNumericValue(line.charAt(colNumber));
+					cells.get(rowNumber).add(new Cell(value, value > 0 && value <= 9));
 				}
 				rowNumber++;
 			}
@@ -52,6 +33,7 @@ public class Board {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		
 	}
 	
@@ -82,61 +64,107 @@ public class Board {
 		return complement;
 	}
 	
-	private void resolve(Cell cell) {
-		Set<Cell> complement = getComplement(cell);
-						
-		for (Cell cellComp : complement) {
-			if (cellComp.removeCandidates(cell.getCandidates())) {
-				resolve(cell);
-			}
-		}
-	}
-	
 	private int getRowNumber(Cell cell) {
-		for (int rowNumber = 0; rowNumber < 9; rowNumber++) {
-			if (cells.get(rowNumber).contains(cell)) {
+		for (int rowNumber = 0; rowNumber < 9; rowNumber++)
+			if (cells.get(rowNumber).contains(cell))
 				return rowNumber;
-			}
-		}
 		return -1;
 	}
 	
 	private int getColNumber(Cell cell) {
-		for (int rowNumber = 0; rowNumber < 9; rowNumber++) {
-			for (int colNumber = 0; colNumber < 9; colNumber++) {
-				if (cells.get(rowNumber).get(colNumber).equals(cell)) {
+		for (int rowNumber = 0; rowNumber < 9; rowNumber++)
+			for (int colNumber = 0; colNumber < 9; colNumber++)
+				if (cells.get(rowNumber).get(colNumber).equals(cell))
 					return colNumber;
+		return -1;
+	}
+	
+	private boolean inComplement(Cell cell, int number) {
+		Set<Cell> complement = getComplement(cell);
+		
+		for (Cell cellCurrent : complement) {
+			if (cellCurrent.getValue() == number) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void backtrack() {
+		int nx = 0, ny = 0;
+		
+		boolean backtrack = false;
+		while (nx < 9) {
+			Cell cell  = cells.get(ny).get(nx);
+			if (!cell.getIsSolved()) {
+				backtrack = true;
+				for (int testNumber = Math.max(cell.getValue()+1, 1); testNumber <= 9; testNumber++) {
+					if (!inComplement(cell, testNumber)) {
+						cell.setValue(testNumber);
+						backtrack = false;
+						break;
+					}
+				}
+				if (backtrack) {
+					cell.setValue(0);
+					if (nx == 0) {
+						nx = 8;
+						--ny;
+					}
+					else {
+						--nx;
+					}
+				}
+				else {
+					if (nx == 8) {
+						nx = ny != 8 ? 0 : ++nx;
+						++ny;
+					}
+					else {
+						 ++nx;
+					}
+				}
+			}
+			else {
+				if (backtrack) {
+					if (nx == 0) {
+						nx = 8;
+						--ny;
+					}
+					else {
+						--nx;
+					}
+				}
+				else {
+					if (nx == 8) {
+						nx = ny != 8 ? 0 : ++nx;
+						++ny;
+					}
+					else {
+						 ++nx;
+					}
 				}
 			}
 		}
-		return -1;
+	}
+	
+	public void solve(Algorithm algorithm) {
+		if (algorithm == Algorithm.Backtrack) {
+			backtrack();
+		}
 	}
 	
 	public String toString() {
 		String str = "";
-		int[] longest = new int[9];
 		for (int row = 0; row < 9; row++) {
 			for (int column = 0; column < 9; column++) {
 				Cell cell = cells.get(row).get(column);
-				str = cell.getCandidates().toString();
-				int length = str.length();
-				if (length > longest[column]) {
-					longest[column] = length;
-				}
+				str += (cell.getValue() != 0 ? cell.getValue() : "-") + " ";
 			}
+			str += "\n";
 		}
 		
-		String strReturn = "";
-		for (int row = 0; row < 9; row++) {
-			for (int column = 0; column < 9; column++) {
-				Cell cell = cells.get(row).get(column);
-				str = cell.getCandidates().toString();
-				strReturn += String.format("%1$-" + (longest[column] + 1) + "s", str);
-			}
-			strReturn += "\n";
-		}
-		
-		return strReturn;
+		return str;
 	}
 	
 }

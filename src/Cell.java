@@ -1,31 +1,26 @@
-import java.util.HashSet;
-import java.util.Set;
-
 public class Cell {
-	private Set<Integer> candidates;
+	private int value;
+	private boolean isSolved;
 	
-	public Cell() {
-		
-		// Add candidates
-		candidates = new HashSet<Integer>();
-		for (int i = 1; i <= 9; i++) {
-			candidates.add(new Integer(i));
-		}
-		
+	public Cell(int value, boolean isSolved) {
+		this.value = value;
+		this.isSolved = isSolved;
 	}
 	
-	public Set<Integer> getCandidates() {
-		Set<Integer> set = new HashSet<Integer>(candidates);
-		return set;
+	public boolean getIsSolved() {
+		return this.isSolved;
 	}
 	
-	public boolean removeCandidates(Set<Integer> candidates) {
-		
-		return this.candidates.removeAll(candidates) && isSolved();
+	public int getValue() {
+		return this.value;
 	}
 	
-	public boolean isSolved() {
-		return candidates.size() == 1;
+	public void setValue(int value) {
+		this.value = value;
+	}
+	
+	public void setIsSolved(boolean isSolved) {
+		this.isSolved = isSolved;
 	}
 	
 }
